@@ -4,10 +4,14 @@ import com.lambdaschool.orders.models.Customer;
 import com.lambdaschool.orders.services.CustomerServices;
 import com.lambdaschool.orders.views.Orders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -51,11 +55,42 @@ public class CustomerController
         return new ResponseEntity<>(myList, HttpStatus.OK);
     }
 
-    //Delete http://localhost:2019/customers/customer/54
+    //DELETE http://localhost:2019/customers/customer/54
     @DeleteMapping(value = "/customer/{custcode}")
     public ResponseEntity<?> deleteRestaurantById(@PathVariable long custcode)
     {
         customerServices.delete(custcode);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //POST http://localhost:2019/customers/customer
+    //Request Body- JSON Object New Restaurant
+    @PostMapping(value = "/customer",
+    consumes = {"application/json"})
+    public ResponseEntity<?> addNewRestaurant(@Valid @RequestBody Customer newCustomer)
+    {
+        newCustomer.setCustcode(0);
+        newCustomer = customerServices.save(newCustomer);
+
+        HttpHeaders responsesHeaders = new HttpHeaders();
+
+        URI newCustomerURI = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{custcode}")
+                .buildAndExpand(newCustomer.getCustcode())
+                .toUri();
+        responsesHeaders.setLocation();
+        return new ResponseEntity<>(null,responsesHeaders,HttpStatus.CREATED);
+    }
+
+    //PUT http://localhost:2019/customers/customer/19
+    @PutMapping(value = "/customer/{custcode}",
+    consumes = "application/jason")
+    public ResponseEntity<?> updateCusotmer(@Valid @RequestBody Customer updateCustomer,
+                                            @PathVariable long custcode)
+    {
+        updateCustomer.setCustcode(custcode);
+        customerServices.save(updateCustomer);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

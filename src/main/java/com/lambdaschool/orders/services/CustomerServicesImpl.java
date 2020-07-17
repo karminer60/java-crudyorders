@@ -19,8 +19,18 @@ public class CustomerServicesImpl implements CustomerServices {
 
     @Transactional
     @Override
-    public Customer save(Customer customer) {
-        return customerrepos.save(customer);
+    public Customer save(Customer customer)
+    {
+        Customer newCustomer = new Customer();
+        if(customer.getCustcode() ! = 0)
+        {
+            customerrepos.findById(customer.getCustcode())
+                    .orElseThrow(() -> new EntityNotFoundException("Restaurant " + customer.getCustcode() + " Not Found"));
+
+
+            newCustomer.setCustcode(customer.getCustcode());
+        }
+        return customerrepos.save(newCustomer);
     }
 
     @Override
